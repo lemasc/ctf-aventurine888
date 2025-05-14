@@ -1,5 +1,16 @@
-import { Outlet } from "react-router";
+import { Outlet, redirect, type LoaderFunctionArgs } from "react-router";
 import { useEffect, useRef } from "react";
+import { serverFetch } from "~/server";
+import { rpc } from "~/lib/rpc";
+
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const user = await rpc.api.user.$get(undefined, {
+    fetch: serverFetch(request),
+  });
+  if (user.status === 200) {
+    return redirect("/app");
+  }
+};
 
 export default function AuthLayout() {
   const playerRef = useRef<HTMLVideoElement>(null);

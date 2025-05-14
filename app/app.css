@@ -132,3 +132,10 @@ body {
     @apply bg-background text-foreground;
   }
 }
+
+.app-bg {
+  background-image: url("./medias/app-bg.webp");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}

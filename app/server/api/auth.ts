@@ -11,7 +11,7 @@ import {
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { setCookie } from "hono/cookie";
+import { deleteCookie, setCookie } from "hono/cookie";
 import { PIN_REGEX } from "./shared/schema";
 
 const loginSchema = z.object({
@@ -157,4 +157,11 @@ export const authApp = new Hono()
         }
       );
     }
-  });
+  })
+  .post("/logout", async (c) => {
+    deleteCookie(c, "token");
+    return c.json({ success: true, message: "Logout successful" } as const,
+      { status: 200 }
+    );
+  }
+  );

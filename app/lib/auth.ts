@@ -30,8 +30,8 @@ export async function verifyPin(
   hashedPin: string,
   plainPin: string
 ): Promise<boolean> {
-  const base64Pin = Buffer.from(plainPin).toString("base64");
-  return bcrypt.compare(base64Pin, hashedPin);
+  const hashedInputPin = await hashPin(plainPin);
+  return hashedPin === hashedInputPin;
 }
 
 // Hash a password
