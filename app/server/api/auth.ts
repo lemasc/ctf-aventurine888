@@ -12,8 +12,7 @@ import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { setCookie } from "hono/cookie";
-
-const PIN_REGEX = /^\d{6}$/;
+import { PIN_REGEX } from "./shared/schema";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),

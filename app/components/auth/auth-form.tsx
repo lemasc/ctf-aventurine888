@@ -55,7 +55,7 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   };
 
   return (
-    <Card className="w-[350px]">
+    <Card className="w-[380px] scale-110">
       <CardHeader>
         <CardTitle>{mode === "login" ? "Login" : "Register"}</CardTitle>
         <CardDescription>
@@ -91,6 +91,9 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
           {(mode === "register" || isPinRequired) && (
             <div className="space-y-2">
               <Label htmlFor="pin">Transfer PIN (6 digits)</Label>
+              <p className="text-xs text-zinc-600">
+                Use when confirming credit transfer.
+              </p>
               <InputOTP
                 value={pin}
                 onChange={(value) => setPin(value)}
@@ -110,7 +113,7 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
             </div>
           )}
           {error && (
-            <div className="text-sm font-medium text-red-500">{error}</div>
+            <div className="text-sm font-medium text-red-700">{error}</div>
           )}
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "Loading..." : mode === "login" ? "Login" : "Register"}
@@ -123,7 +126,7 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
               <Button
                 variant="link"
                 onClick={() => navigate("/register")}
-                className="p-0"
+                className="p-0 text-yellow-600 cursor-pointer"
               >
                 Register
               </Button>
@@ -134,7 +137,7 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
               <Button
                 variant="link"
                 onClick={() => navigate("/login")}
-                className="p-0"
+                className="p-0 text-yellow-600 cursor-pointer"
               >
                 Login
               </Button>
