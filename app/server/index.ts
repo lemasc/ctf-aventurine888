@@ -4,6 +4,8 @@ import { apiApp } from "./api";
 
 const app = new Hono().route("/api", apiApp);
 
+export type AppType = typeof app;
+
 export default await createHonoServer({
   app,
 });
