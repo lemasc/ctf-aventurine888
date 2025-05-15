@@ -1,11 +1,13 @@
 import { Hono } from "hono";
-import { zValidator } from "@hono/zod-validator";
+import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyToken } from "~/lib/auth";
 import { getCookie } from "hono/cookie";
+import { describeRoute } from "hono-openapi";
+import { successSchema } from "./shared/schema";
 
 const transferSchema = z.object({
   recipientId: z.string().length(10, "Invalid recipient ID"),
@@ -13,8 +15,28 @@ const transferSchema = z.object({
   pin: z.string().length(6, "PIN must be 6 digits"),
 });
 
-export const transferApp = new Hono()
-  .post("/credit", zValidator("json", transferSchema), async (c) => {
+export const transferApp = new Hono().post(
+  "/credit",
+  describeRoute({
+    description: "Transfer credits to another user",
+    tags: ["transfer"],
+    responses: {
+      200: {
+        description: "Transfer successful",
+        content: {
+          "application/json": {
+            schema: resolver(
+              successSchema.extend({
+                newBalance: z.number().int().positive(),
+              })
+            ),
+          },
+        },
+      },
+    },
+  }),
+  zValidator("json", transferSchema),
+  async (c) => {
     try {
       // Get token from cookie
       const token = getCookie(c, "token");
@@ -46,25 +68,12 @@ export const transferApp = new Hono()
         ]);
 
         if (!sender || !recipient) {
-          return c.json(
-            { success: false, message: "User not found" },
-            404
-          );
-        }
-
-        if(sender.userType === "bot" || recipient.userType === "bot") {
-          return c.json(
-            { success: false, message: "Cannot send credits. Access denied." },
-            403
-          );
+          return c.json({ success: false, message: "User not found" }, 404);
         }
 
         // Verify PIN
         if (sender.verificationPin !== pin) {
-          return c.json(
-            { success: false, message: "Invalid PIN" },
-            403
-          );
+          return c.json({ success: false, message: "Invalid PIN" }, 403);
         }
 
         // Check balance
@@ -97,4 +106,5 @@ export const transferApp = new Hono()
       console.error("Transfer error:", error);
       return c.json({ success: false, message: "Internal server error" }, 500);
     }
-  });
+  }
+);
