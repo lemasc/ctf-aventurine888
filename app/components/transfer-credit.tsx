@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRevalidator } from "react-router";
+import { useRevalidator, useRouteLoaderData } from "react-router";
 import {
   CardContent,
   CardHeader,
@@ -18,8 +18,13 @@ import {
 } from "./ui/input-otp";
 import { REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { Input } from "./ui/input";
+import type { Info } from "../routes/+types/app._index";
 
-export function TransferCreditCard() {
+export function TransferCreditCard({
+  user,
+}: {
+  user: Info["loaderData"]["user"];
+}) {
   const [recipientId, setRecipientId] = useState("");
   const [amount, setAmount] = useState("");
   const [pin, setPin] = useState("");
@@ -54,6 +59,26 @@ export function TransferCreditCard() {
       // setRecipientId("");
       setAmount("");
       setPin("");
+
+      // Send notifications
+      await Promise.all([
+        // Notify sender
+        rpc.api.notifications.notify.$post({
+          json: {
+            receiverId: user.userId,
+            content: `You sent ${amount.toLocaleString()} credits to UID ${recipientId}`,
+          },
+        }),
+        // Notify recipient
+        rpc.api.notifications.notify.$post({
+          json: {
+            receiverId: recipientId,
+            content: `You received ${amount.toLocaleString()} credits from UID ${
+              user.userId
+            }`,
+          },
+        }),
+      ]);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Transfer failed");
     } finally {
@@ -63,7 +88,7 @@ export function TransferCreditCard() {
   };
 
   return (
-    <Card className="bg-blue-50/90 gap-3">
+    <Card className="bg-blue-50/70 backdrop-blur-sm gap-3">
       <CardHeader>
         <CardTitle>Transfer Credits</CardTitle>
         <CardDescription>Send credits to another user</CardDescription>

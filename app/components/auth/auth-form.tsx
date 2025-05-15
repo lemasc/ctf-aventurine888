@@ -93,6 +93,10 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
               <Label htmlFor="pin">Transfer PIN (6 digits)</Label>
               <p className="text-xs text-zinc-600">
                 Use when confirming credit transfer.
+                <br />
+                <span className="text-red-600 font-medium">
+                  Please remember this PIN. You cannot reset it!
+                </span>
               </p>
               <InputOTP
                 value={pin}
@@ -102,12 +106,12 @@ export function AuthForm({ mode, onSubmit }: AuthFormProps) {
                 pattern={REGEXP_ONLY_DIGITS}
               >
                 <InputOTPGroup>
-                  <InputOTPSlot index={0} />
-                  <InputOTPSlot index={1} />
-                  <InputOTPSlot index={2} />
-                  <InputOTPSlot index={3} />
-                  <InputOTPSlot index={4} />
-                  <InputOTPSlot index={5} />
+                  <InputOTPSlot index={0} className="w-[55px]" />
+                  <InputOTPSlot index={1} className="w-[55px]" />
+                  <InputOTPSlot index={2} className="w-[55px]" />
+                  <InputOTPSlot index={3} className="w-[55px]" />
+                  <InputOTPSlot index={4} className="w-[55px]" />
+                  <InputOTPSlot index={5} className="w-[55px]" />
                 </InputOTPGroup>
               </InputOTP>
             </div>

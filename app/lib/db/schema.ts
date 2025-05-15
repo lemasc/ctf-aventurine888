@@ -12,5 +12,18 @@ export const users = sqliteTable("users", {
     .default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const notifications = sqliteTable("notifications", {
+  id: text("id").primaryKey().notNull(),
+  senderId: text("sender_id").references(() => users.userId),
+  receiverId: text("receiver_id").notNull().references(() => users.userId),
+  content: text("content").notNull(),
+  hasRead: integer("has_read", { mode: "boolean" }).notNull().default(false),
+  createdAt: text("created_at")
+    .notNull()
+    .default(sql`CURRENT_TIMESTAMP`),
+});
+
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
+export type Notification = typeof notifications.$inferSelect;
+export type NewNotification = typeof notifications.$inferInsert;
