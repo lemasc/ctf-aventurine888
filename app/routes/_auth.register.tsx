@@ -1,26 +1,25 @@
-import { AuthForm } from "~/components/auth/auth-form";
-import { rpc } from "~/lib/rpc";
+import { AuthForm, type OnRegisterHandler } from "~/components/auth/auth-form";
 
 export default function RegisterPage() {
-  const handleRegister = async ({
+  const handleRegister: OnRegisterHandler = async ({
     username,
     password,
     pin,
-  }: {
-    username: string;
-    password: string;
-    pin?: string;
   }) => {
     if (!pin || pin.length !== 6) {
       throw new Error("PIN must be 6 digits");
     }
 
-    const response = await rpc.api.register.$post({
-      json: {
+    const response = await fetch("/api/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
         username,
         password,
         pin,
-      },
+      }),
     });
 
     if (!response.ok) {

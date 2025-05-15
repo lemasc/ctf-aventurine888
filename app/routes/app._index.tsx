@@ -1,4 +1,3 @@
-import { rpc } from "~/lib/rpc";
 import {
   Card,
   CardContent,
@@ -14,7 +13,9 @@ import { GachaBanner } from "~/components/gacha-banner";
 
 const fetchNotifications = async () => {
   console.log("Fetching notifications...");
-  const response = await rpc.api.notifications.$get();
+  const response = await fetch("/api/notifications", {
+    method: "GET",
+  });
   if (response.status === 200) {
     const { notifications } = await response.json();
     console.log("Notifications fetched successfully");
@@ -30,7 +31,9 @@ export type Notifications = Awaited<ReturnType<typeof fetchNotifications>>;
 export const clientLoader = async (args: ClientLoaderFunctionArgs) => {
   console.log("============================");
   console.log("Fetching user data...");
-  const response = await rpc.api.user.$get();
+  const response = await fetch("/api/user", {
+    method: "GET",
+  });
   if (response.status === 200) {
     const { user } = await response.json();
     console.log("User data fetched successfully");

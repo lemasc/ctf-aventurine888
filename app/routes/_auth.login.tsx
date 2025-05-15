@@ -1,14 +1,13 @@
-import { AuthForm } from "~/components/auth/auth-form";
-import { rpc } from "~/lib/rpc";
+import { AuthForm, type OnLoginHandler } from "~/components/auth/auth-form";
 
 export default function LoginPage() {
-  const handleLogin = async (data: {
-    username: string;
-    password: string;
-    pin?: string;
-  }) => {
-    const response = await rpc.api.login.$post({
-      json: data,
+  const handleLogin: OnLoginHandler = async (data) => {
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
     if (response.status !== 200) {
       if (response.status === 402) {

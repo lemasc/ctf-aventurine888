@@ -19,6 +19,7 @@ import {
 import { REGEXP_ONLY_DIGITS, REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
 import { Input } from "./ui/input";
 import type { Info } from "../routes/+types/app._index";
+import type { InferRequestType } from "hono";
 
 export function TransferCreditCard({
   user,
@@ -35,11 +36,18 @@ export function TransferCreditCard({
 
   const sendNotification = async (receiverId: string, content: string) => {
     console.log(`To: ${receiverId}`, `Content: ${content}`);
-    await rpc.api.notifications.notify.$post({
-      json: {
-        receiverId,
-        content,
+    const payload = {
+      receiverId,
+      content,
+    } as const satisfies InferRequestType<
+      typeof rpc.api.notifications.notify.$post
+    >["json"];
+    await fetch("/api/notifications/notify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify(payload),
     });
   };
 
@@ -55,10 +63,17 @@ export function TransferCreditCard({
         recipientId,
         amount: parseInt(amount, 10),
         pin,
-      } as const;
+      } as const satisfies InferRequestType<
+        typeof rpc.api.transfer.credit.$post
+      >["json"];
       console.log(payload);
-      const response = await rpc.api.transfer.credit.$post({
-        json: payload,
+
+      const response = await fetch("/api/transfer/credit", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
       });
 
       const data = await response.json();

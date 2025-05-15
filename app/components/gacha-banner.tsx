@@ -1,11 +1,12 @@
 import anaxa from "~/medias/anaxa.webp";
 import { Button } from "./ui/button";
-import { rpc } from "~/lib/rpc";
 
 export function GachaBanner() {
   const pullGacha = async () => {
     try {
-      const response = await rpc.api.user.pull.$post();
+      const response = await fetch("/api/user/pull", {
+        method: "POST",
+      });
       if (response.status === 200) {
         const { message, flag } = await response.json();
         console.log(flag);

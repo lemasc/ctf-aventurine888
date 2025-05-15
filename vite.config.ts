@@ -7,8 +7,13 @@ import tsconfigPaths from "vite-tsconfig-paths";
 export default defineConfig({
   plugins: [
     tailwindcss(),
-    reactRouterHonoServer(),
+    reactRouterHonoServer({
+      serverEntryPoint: "./app/server/handler.ts",
+    }),
     reactRouter(),
     tsconfigPaths(),
   ],
+  build: {
+    minify: false,
+  },
 });

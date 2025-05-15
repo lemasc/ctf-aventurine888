@@ -1,12 +1,13 @@
 import { Outlet, useNavigate } from "react-router";
 import logo from "~/medias/hsr_logo.png";
-import { rpc } from "~/lib/rpc";
 
 export default function AppLayout() {
   const navigate = useNavigate();
   const logout = async () => {
     if (confirm("Are you sure you want to logout?")) {
-      await rpc.api.logout.$post().catch(() => {});
+      await fetch("/api/logout", {
+        method: "POST",
+      }).catch(() => {});
       navigate("/login");
     }
   };

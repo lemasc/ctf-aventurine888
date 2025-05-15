@@ -13,15 +13,26 @@ import { InputOTPGroup } from "../ui/input-otp";
 import { InputOTP, InputOTPSlot } from "../ui/input-otp";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { useNavigate } from "react-router";
+import type { InferRequestType } from "hono";
+import type { rpc } from "~/lib/rpc";
 
-interface AuthFormProps {
-  mode: "login" | "register";
-  onSubmit: (data: {
-    username: string;
-    password: string;
-    pin?: string;
-  }) => Promise<void>;
-}
+export type OnLoginHandler = (
+  data: InferRequestType<typeof rpc.api.login.$post>["json"]
+) => Promise<void>;
+
+export type OnRegisterHandler = (
+  data: InferRequestType<typeof rpc.api.register.$post>["json"]
+) => Promise<void>;
+
+type AuthFormProps =
+  | {
+      mode: "login";
+      onSubmit: OnLoginHandler;
+    }
+  | {
+      mode: "register";
+      onSubmit: OnRegisterHandler;
+    };
 
 export function AuthForm({ mode, onSubmit }: AuthFormProps) {
   const navigate = useNavigate();

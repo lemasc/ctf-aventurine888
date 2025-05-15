@@ -1,12 +1,9 @@
 import { Outlet, redirect, type LoaderFunctionArgs } from "react-router";
 import { useEffect, useRef } from "react";
 import { serverFetch } from "~/server";
-import { rpc } from "~/lib/rpc";
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const user = await rpc.api.user.$get(undefined, {
-    fetch: serverFetch(request),
-  });
+  const user = await serverFetch(request)("/api/user", undefined);
   if (user.status === 200) {
     return redirect("/app");
   }
