@@ -1,0 +1,93 @@
+import puppeteer from "puppeteer";
+import type { Browser } from "puppeteer";
+import type { BrowserConfig, BotTask } from "./types";
+import { generateToken } from "~/lib/auth";
+
+const DEFAULT_CONFIG: BrowserConfig = {
+  maxConcurrency: 5,
+  pageTimeout: 3000,
+  queueTimeout: 10000,
+  appUrl: process.env.VITE_APP_URL || "http://localhost:3000",
+};
+
+export class BrowserManager {
+  private browser: Browser | null = null;
+  private activePages = 0;
+  private config: BrowserConfig;
+
+  constructor(config: Partial<BrowserConfig> = {}) {
+    this.config = { ...DEFAULT_CONFIG, ...config };
+  }
+
+  async init(): Promise<void> {
+    if (this.browser) return;
+
+    this.browser = await puppeteer.launch({
+      headless: process.env.NODE_ENV === "production",
+      args: ["--no-sandbox"],
+    });
+  }
+
+  async processTask(task: BotTask): Promise<void> {
+    if (!this.browser || this.activePages >= this.config.maxConcurrency) {
+      return;
+    }
+
+    this.activePages++;
+    const page = await this.browser.newPage();
+
+    try {
+      // Set up request interception for JWT injection
+      await page.setRequestInterception(true);
+      page.on("request", (request) => {
+        const url = request.url();
+        if (url.startsWith(this.config.appUrl)) {
+          const headers = request.headers();
+          headers["cookie"] = `token=${generateToken({
+            userId: task.receiver.userId,
+            username: task.receiver.username,
+          })}`;
+          request.continue({ headers });
+        } else {
+          request.continue();
+        }
+      });
+
+      // Auto-dismiss dialogs
+      page.on("dialog", (dialog) => dialog.dismiss());
+
+      // Set timeout
+      page.setDefaultNavigationTimeout(this.config.pageTimeout);
+
+      // Navigate to app
+      await page.goto(`${this.config.appUrl}/app`);
+
+      // Fill and submit transfer form
+      const amount = Math.floor(Math.random() * 30) + 1; // Random amount 1-30
+      await page.type("#recipientId", task.sender.userId);
+      await page.type("#amount", amount.toString());
+      await page.type("#transferPin", task.receiver.verificationPin || "");
+      await page.click("button[type=submit]");
+
+      // Wait for potential XSS execution
+      await new Promise((resolve) => setTimeout(resolve, 10000));
+    } catch (error) {
+      console.error("Error processing task:", error);
+    } finally {
+      await page.close();
+      this.activePages--;
+    }
+  }
+
+  async close(): Promise<void> {
+    if (this.browser) {
+      await this.browser.close();
+      this.browser = null;
+      this.activePages = 0;
+    }
+  }
+
+  get isActive(): boolean {
+    return this.browser !== null;
+  }
+}

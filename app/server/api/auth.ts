@@ -2,12 +2,8 @@ import { Hono } from "hono";
 import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { z } from "zod";
-import {
-  generateToken,
-  generateUserId,
-  hashPassword,
-  verifyPassword,
-} from "~/lib/auth";
+import { generateUserId } from "~/lib/random";
+import { generateToken, hashPassword, verifyPassword } from "~/lib/auth";
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
 import { eq } from "drizzle-orm";

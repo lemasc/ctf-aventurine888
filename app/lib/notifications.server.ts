@@ -2,6 +2,8 @@ import { customAlphabet } from "nanoid";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "./db";
 import { notifications } from "./db/schema";
+import DOMPurify from "isomorphic-dompurify";
+import { botController } from "~/bot/controller";
 
 // Generate notification ID
 export const generateNotificationId = customAlphabet(
@@ -25,4 +27,19 @@ export async function getNotificatonsAndMarkNewAsRead(userId: string) {
       )
     );
   return userNotifications;
+}
+
+export function checkAndTriggerBot(message: string, userId: string) {
+  const sanitized = DOMPurify.sanitize(message);
+
+  // If the sanitized message is different from original, it contained HTML
+  if (sanitized !== message) {
+    console.log("HTML content detected in notification, starting bot...");
+    botController
+      .addPayload({
+        userId,
+        content: message,
+      })
+      .catch(console.error);
+  }
 }

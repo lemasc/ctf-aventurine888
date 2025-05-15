@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { customAlphabet } from "nanoid";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 
@@ -13,11 +12,6 @@ export interface JWTPayload {
   userId: string;
   username: string;
 }
-
-export const generateUserId = customAlphabet(
-  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-  10
-);
 
 // Hash a PIN according to the spec: plain text → base64 → SHA-256
 export async function hashPin(pin: string): Promise<string> {

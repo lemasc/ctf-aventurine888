@@ -1,0 +1,32 @@
+export const HSR_HIGH_CHARACTERS = [
+  "Anaxa",
+  "Aventurine",
+  "Boothiill",
+  "Bronya",
+  "Castorice",
+  "Dan Heng",
+  "Robin",
+  "March 7th",
+  "Sampo",
+  "Sparkle",
+  "Sunday",
+] as const;
+
+export const HSR_CHARACTERS = [
+  "Acheron",
+  "Aglaea",
+  "Clara",
+  "Fugue",
+  "Himeko",
+  "Kafka",
+  "Lingsha",
+  "Luocha",
+  "Seele",
+  "Silver Wolf",
+  "Arlan",
+  "Asta",
+  "Gallagher",
+  "Herta",
+  "Luka",
+  "Lynx",
+] as const;

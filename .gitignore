@@ -7,3 +7,5 @@
 
 .env
 *.db
+
+mock-creds.json
