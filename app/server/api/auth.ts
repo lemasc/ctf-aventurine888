@@ -5,14 +5,14 @@ import {
   generateToken,
   generateUserId,
   hashPassword,
-  hashPin,
   verifyPassword,
 } from "~/lib/auth";
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { deleteCookie, setCookie } from "hono/cookie";
 import { PIN_REGEX } from "./shared/schema";
+import { LibsqlError } from "@libsql/client";
 
 const loginSchema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -31,12 +31,12 @@ export const authApp = new Hono()
       const { username, password, pin } = c.req.valid("json");
       // Get user
       const user = await db.query.users.findFirst({
-        where: eq(users.username, username),
+        where: and(eq(users.username, username), eq(users.userType, "user")),
       });
 
       if (!user) {
         return c.json(
-          { success: false, message: "Invalid credentials" } as const,
+          { success: false, message: "Invalid username or password" } as const,
           { status: 401 }
         );
       }
@@ -45,7 +45,7 @@ export const authApp = new Hono()
       const isValidPassword = await verifyPassword(user.password, password);
       if (!isValidPassword) {
         return c.json(
-          { success: false, message: "Invalid credentials" } as const,
+          { success: false, message: "Invalid username or password" } as const,
           { status: 401 }
         );
       }
@@ -61,7 +61,7 @@ export const authApp = new Hono()
           // update the user with the PIN
           await db
             .update(users)
-            .set({ verificationPin: await hashPin(pin) })
+            .set({ verificationPin: pin })
             .where(eq(users.userId, user.userId));
         }
       }
@@ -86,7 +86,6 @@ export const authApp = new Hono()
           user: {
             userId: user.userId,
             username: user.username,
-            balance: user.balance,
           },
         } as const,
         { status: 200 }
@@ -114,19 +113,40 @@ export const authApp = new Hono()
         );
       }
 
-      // Generate user ID and hash credentials
-      const userId = generateUserId();
-      const hashedPassword = await hashPassword(password);
-      const hashedPin = await hashPin(pin);
+      const createUser = async (count = 1) => {
+        // Generate user ID and hash credentials
+        const userId = generateUserId();
+        const hashedPassword = await hashPassword(password);
 
-      // Create user
-      await db.insert(users).values({
-        userId,
-        username,
-        password: hashedPassword,
-        verificationPin: hashedPin,
-        balance: 0,
-      });
+        // Create user
+        try {
+          await db.insert(users).values({
+            userId,
+            username,
+            password: hashedPassword,
+            verificationPin: pin,
+            balance: 0,
+            userType: "user",
+          });
+        } catch (error) {
+          if (
+            error instanceof LibsqlError &&
+            error.code === "SQLITE_CONSTRAINT_PRIMARYKEY"
+          ) {
+            if (count > 10) {
+              throw new Error(
+                "Too many attempts to create user. ID collision."
+              );
+            }
+            // try again
+            return createUser(count + 1);
+          }
+          throw error;
+        }
+        return userId;
+      };
+
+      const userId = await createUser();
 
       // Generate token
       const token = generateToken({
@@ -160,8 +180,7 @@ export const authApp = new Hono()
   })
   .post("/logout", async (c) => {
     deleteCookie(c, "token");
-    return c.json({ success: true, message: "Logout successful" } as const,
-      { status: 200 }
-    );
-  }
-  );
+    return c.json({ success: true, message: "Logout successful" } as const, {
+      status: 200,
+    });
+  });

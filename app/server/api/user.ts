@@ -4,6 +4,7 @@ import { users } from "~/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyToken } from "~/lib/auth";
 import { getCookie } from "hono/cookie";
+import { hashPin } from "~/lib/auth";
 
 export const userApp = new Hono()
   .get("/", async (c) => {
@@ -35,7 +36,7 @@ export const userApp = new Hono()
             username: user.username,
             balance: user.balance,
             createdAt: user.createdAt,
-            pin: user.verificationPin,
+            pin: await hashPin(user.verificationPin!),
           },
         } as const,
         200

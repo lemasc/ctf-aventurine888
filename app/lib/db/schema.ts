@@ -10,6 +10,7 @@ export const users = sqliteTable("users", {
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
+  userType: text("user_type").notNull().$type<"user" | "bot">().default("user"),
 });
 
 export const notifications = sqliteTable("notifications", {

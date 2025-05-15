@@ -32,7 +32,7 @@ export function NotificationPanel({ notifications }: NotificationPanelProps) {
       <CardContent className="space-y-2">
         {displayedNotifications.length === 0 ? (
           <p className="text-sm text-neutral-600 text-center py-4">
-            No{notifications.length !== 0 ? " new " : ""}notifications
+            No {notifications.length !== 0 ? "new " : ""}notifications
           </p>
         ) : (
           displayedNotifications.map((notification) => (

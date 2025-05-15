@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useRevalidator, useRouteLoaderData } from "react-router";
+import { useRevalidator } from "react-router";
 import {
   CardContent,
   CardHeader,
@@ -33,6 +33,16 @@ export function TransferCreditCard({
   const [isLoading, setIsLoading] = useState(false);
   const { revalidate } = useRevalidator();
 
+  const sendNotification = async (receiverId: string, content: string) => {
+    console.log(`To: ${receiverId}`, `Content: ${content}`);
+    await rpc.api.notifications.notify.$post({
+      json: {
+        receiverId,
+        content,
+      },
+    });
+  };
+
   const handleTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -40,12 +50,15 @@ export function TransferCreditCard({
     setIsLoading(true);
 
     try {
+      console.log("Sending transfer request...");
+      const payload = {
+        recipientId,
+        amount: parseInt(amount, 10),
+        pin,
+      } as const;
+      console.log(payload);
       const response = await rpc.api.transfer.credit.$post({
-        json: {
-          recipientId,
-          amount: parseInt(amount, 10),
-          pin,
-        },
+        json: payload,
       });
 
       const data = await response.json();
@@ -55,31 +68,31 @@ export function TransferCreditCard({
       }
 
       setSuccess("Transfer successful!");
+      console.log("Transfer successful!");
 
       // setRecipientId("");
       setAmount("");
       setPin("");
 
+      console.log("Sending notifications...");
+
       // Send notifications
       await Promise.all([
         // Notify sender
-        rpc.api.notifications.notify.$post({
-          json: {
-            receiverId: user.userId,
-            content: `You sent ${amount.toLocaleString()} credits to UID ${recipientId}`,
-          },
-        }),
+        sendNotification(
+          user.userId,
+          `You sent ${amount.toLocaleString()} credits to UID ${recipientId}`
+        ),
         // Notify recipient
-        rpc.api.notifications.notify.$post({
-          json: {
-            receiverId: recipientId,
-            content: `You received ${amount.toLocaleString()} credits from UID ${
-              user.userId
-            }`,
-          },
-        }),
+        sendNotification(
+          recipientId,
+          `You received ${amount.toLocaleString()} credits from UID ${
+            user.userId
+          }`
+        ),
       ]);
     } catch (err) {
+      console.error(err);
       setError(err instanceof Error ? err.message : "Transfer failed");
     } finally {
       setIsLoading(false);
@@ -97,11 +110,16 @@ export function TransferCreditCard({
         <form onSubmit={handleTransfer} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="recipientId">Recipient ID</Label>
+            <p className="text-xs text-zinc-600">
+              You can type or paste the recipient ID here.
+            </p>
             <InputOTP
+              id="recipientId"
               maxLength={10}
               value={recipientId}
               onChange={(v) => setRecipientId(v.toUpperCase())}
               pattern={REGEXP_ONLY_DIGITS_AND_CHARS}
+              pasteTransformer={(pasted) => pasted.replaceAll("-", "")}
               containerClassName="gap-1 text-sm"
               required
             >
@@ -142,6 +160,7 @@ export function TransferCreditCard({
           <div className="space-y-2">
             <Label htmlFor="pin">Transfer PIN</Label>
             <InputOTP
+              id="transferPin"
               maxLength={6}
               value={pin}
               onChange={setPin}

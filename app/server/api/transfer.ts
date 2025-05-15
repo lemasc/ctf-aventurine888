@@ -4,7 +4,7 @@ import { z } from "zod";
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
 import { eq } from "drizzle-orm";
-import { verifyToken, verifyPin } from "~/lib/auth";
+import { verifyToken } from "~/lib/auth";
 import { getCookie } from "hono/cookie";
 
 const transferSchema = z.object({
@@ -26,6 +26,13 @@ export const transferApp = new Hono()
       const { userId } = verifyToken(token);
       const { recipientId, amount, pin } = c.req.valid("json");
 
+      if (recipientId === userId) {
+        return c.json(
+          { success: false, message: "You cannot transfer to yourself!" },
+          400
+        );
+      }
+
       // Start transaction
       return await db.transaction(async (tx) => {
         // Get sender and recipient
@@ -45,9 +52,15 @@ export const transferApp = new Hono()
           );
         }
 
+        if(sender.userType === "bot" || recipient.userType === "bot") {
+          return c.json(
+            { success: false, message: "Cannot send credits. Access denied." },
+            403
+          );
+        }
+
         // Verify PIN
-        const isValidPin = await verifyPin(sender.verificationPin!, pin);
-        if (!isValidPin) {
+        if (sender.verificationPin !== pin) {
           return c.json(
             { success: false, message: "Invalid PIN" },
             403

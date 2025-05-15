@@ -13,9 +13,12 @@ import { NotificationPanel } from "~/components/notification-panel";
 import { GachaBanner } from "~/components/gacha-banner";
 
 const fetchNotifications = async () => {
+  console.log("Fetching notifications...");
   const response = await rpc.api.notifications.$get();
   if (response.status === 200) {
     const { notifications } = await response.json();
+    console.log("Notifications fetched successfully");
+    console.log(notifications);
     return notifications;
   } else {
     throw new Error("Failed to fetch notifications");
@@ -25,9 +28,13 @@ const fetchNotifications = async () => {
 export type Notifications = Awaited<ReturnType<typeof fetchNotifications>>;
 
 export const clientLoader = async (args: ClientLoaderFunctionArgs) => {
+  console.log("============================");
+  console.log("Fetching user data...");
   const response = await rpc.api.user.$get();
   if (response.status === 200) {
     const { user } = await response.json();
+    console.log("User data fetched successfully");
+    console.log(user);
     return { user, notifications: await fetchNotifications() } as const;
   } else if (response.status === 500) {
     console.error(response);

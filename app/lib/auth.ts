@@ -25,15 +25,6 @@ export async function hashPin(pin: string): Promise<string> {
   return crypto.createHash("sha256").update(base64Pin).digest("hex");
 }
 
-// Verify a PIN
-export async function verifyPin(
-  hashedPin: string,
-  plainPin: string
-): Promise<boolean> {
-  const hashedInputPin = await hashPin(plainPin);
-  return hashedPin === hashedInputPin;
-}
-
 // Hash a password
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, SALT_ROUNDS);
