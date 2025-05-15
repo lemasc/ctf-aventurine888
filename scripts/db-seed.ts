@@ -3,7 +3,7 @@ import { users } from "~/lib/db/schema";
 import { hashPassword } from "~/lib/auth";
 
 async function main() {
-  // create initial users
+  console.log("Creating initial users...");
   await db
     .insert(users)
     .values({
@@ -12,7 +12,6 @@ async function main() {
       username: "madamherta",
       password: await hashPassword("herta555"),
       balance: 160,
-      userType: "user",
     })
     .onConflictDoNothing();
 }

@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "e011d0f1-0b7b-4017-9d55-9a6f3cbe8606",
+  "id": "e1d42feb-6a37-4fd2-a0c3-8e78f63401e9",
   "prevId": "e6cc7ae8-ef23-4d14-aa25-1b5e6c379f2b",
   "tables": {
     "notifications": {
@@ -64,7 +64,7 @@
           "columnsTo": [
             "user_id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         },
         "notifications_receiver_id_users_user_id_fk": {
@@ -77,7 +77,7 @@
           "columnsTo": [
             "user_id"
           ],
-          "onDelete": "no action",
+          "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },

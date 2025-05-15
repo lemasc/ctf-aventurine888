@@ -10,6 +10,8 @@ import type { Route } from "./+types/app._index";
 import { TransferCreditCard } from "~/components/transfer-credit";
 import { NotificationPanel } from "~/components/notification-panel";
 import { GachaBanner } from "~/components/gacha-banner";
+import type { InferResponseType } from "hono";
+import type { rpc } from "~/lib/rpc";
 
 const fetchNotifications = async () => {
   console.log("Fetching notifications...");
@@ -17,7 +19,10 @@ const fetchNotifications = async () => {
     method: "GET",
   });
   if (response.status === 200) {
-    const { notifications } = await response.json();
+    const { notifications } = (await response.json()) as InferResponseType<
+      typeof rpc.api.notifications.$get,
+      200
+    >;
     console.log("Notifications fetched successfully");
     console.log(notifications);
     return notifications;

@@ -10,13 +10,18 @@ export const users = sqliteTable("users", {
   createdAt: text("created_at")
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),
-  userType: text("user_type").notNull().$type<"user" | "bot">().default("user"),
 });
 
 export const notifications = sqliteTable("notifications", {
   id: text("id").primaryKey().notNull(),
-  senderId: text("sender_id").references(() => users.userId),
-  receiverId: text("receiver_id").notNull().references(() => users.userId),
+  senderId: text("sender_id").references(() => users.userId, {
+    onDelete: "cascade",
+  }),
+  receiverId: text("receiver_id")
+    .notNull()
+    .references(() => users.userId, {
+      onDelete: "cascade",
+    }),
   content: text("content").notNull(),
   hasRead: integer("has_read", { mode: "boolean" }).notNull().default(false),
   createdAt: text("created_at")
