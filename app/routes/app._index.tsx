@@ -10,6 +10,7 @@ import { redirect, type ClientLoaderFunctionArgs } from "react-router";
 import type { Route } from "./+types/app._index";
 import { TransferCreditCard } from "~/components/transfer-credit";
 import { NotificationPanel } from "~/components/notification-panel";
+import { GachaBanner } from "~/components/gacha-banner";
 
 const fetchNotifications = async () => {
   const response = await rpc.api.notifications.$get();
@@ -42,7 +43,7 @@ export default function DashboardPage({
   return (
     <div className="text-white p-8 pt-0">
       <div className="max-w-4xl mx-auto flex flex-col gap-8 w-full">
-        <div className="flex flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-8">
           <div className="flex flex-col gap-8">
             <Card className="bg-blue-50/70 backdrop-blur-sm gap-3 w-full">
               <CardHeader>
@@ -65,8 +66,9 @@ export default function DashboardPage({
             </Card>
             <TransferCreditCard user={user} />
           </div>
+          <NotificationPanel notifications={notifications} />
         </div>
-        <NotificationPanel notifications={notifications} />
+        <GachaBanner />
       </div>
     </div>
   );

@@ -17,7 +17,7 @@ export function NotificationPanel({ notifications }: NotificationPanelProps) {
   const displayedNotifications = showAll ? notifications : unread;
 
   return (
-    <Card className="bg-blue-50/70 backdrop-blur-sm">
+    <Card className="bg-blue-50/70 backdrop-blur-sm w-full flex-1 lg:max-h-[638px] overflow-y-auto">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <Bell className="h-5 w-5" />
@@ -29,7 +29,7 @@ export function NotificationPanel({ notifications }: NotificationPanelProps) {
           )}
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-2 max-h-[400px] overflow-y-auto">
+      <CardContent className="space-y-2">
         {displayedNotifications.length === 0 ? (
           <p className="text-sm text-neutral-600 text-center py-4">
             No{notifications.length !== 0 ? " new " : ""}notifications
