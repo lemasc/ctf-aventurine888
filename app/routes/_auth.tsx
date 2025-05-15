@@ -36,7 +36,7 @@ export default function AuthLayout() {
     <div className="bg-neutral-900 h-screen w-screen relative">
       <div className="bg-black/50 h-screen">
         <video
-          src="https://www.it.kmitl.ac.th/~it67070173/ctf-hsr-bg-login.mp4"
+          src="https://static.photologue.xyz/ctf-hsr-bg-login.mp4"
           autoPlay
           loop
           muted
