@@ -33,6 +33,58 @@ export const transferApp = new Hono().post(
           },
         },
       },
+      400: {
+        description: "Bad request",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.literal(false),
+                message: z.string(),
+              })
+            ),
+          },
+        },
+      },
+      401: {
+        description: "Unauthorized",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.literal(false),
+                message: z.string(),
+              })
+            ),
+          },
+        },
+      },
+      403: {
+        description: "Forbidden",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.literal(false),
+                message: z.string(),
+              })
+            ),
+          },
+        },
+      },
+      404: {
+        description: "User not found",
+        content: {
+          "application/json": {
+            schema: resolver(
+              z.object({
+                success: z.literal(false),
+                message: z.string(),
+              })
+            ),
+          },
+        },
+      },
     },
   }),
   zValidator("json", transferSchema),
@@ -50,7 +102,7 @@ export const transferApp = new Hono().post(
 
       if (recipientId === userId) {
         return c.json(
-          { success: false, message: "You cannot transfer to yourself!" },
+          { success: false, message: "You cannot transfer to yourself. Create a new account to test." },
           400
         );
       }
@@ -81,6 +133,16 @@ export const transferApp = new Hono().post(
           return c.json(
             { success: false, message: "Insufficient balance" },
             400
+          );
+        }
+
+        if (sender.userType === "user" && recipient.userType === "system") {
+          return c.json(
+            {
+              success: false,
+              message: "You cannot transfer to a system account!",
+            },
+            403
           );
         }
 

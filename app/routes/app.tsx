@@ -17,7 +17,9 @@ export default function AppLayout() {
       <div className="w-full h-full overflow-y-auto">
         <div className="relative">
           <div className="flex items-center justify-center p-6 sticky top-0">
-            <img src={logo} alt="Logo" className="h-24 w-auto" />
+            <a href="/api/docs" target="_blank" rel="noopener noreferrer">
+              <img src={logo} alt="Logo" className="h-24 w-auto" />
+            </a>
           </div>
           <div className="absolute top-0 right-0 p-8">
             <button

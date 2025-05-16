@@ -5,7 +5,7 @@ import creds from "../mock-creds.json"
 
 async function main() {
   console.log("Creating initial users...");
-  for(const cred of creds) {
+  for (const cred of creds) {
     await db
     .insert(users)
     .values({

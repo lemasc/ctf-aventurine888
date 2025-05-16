@@ -3,7 +3,7 @@ import { describeRoute } from "hono-openapi";
 import { resolver, validator as zValidator } from "hono-openapi/zod";
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { verifyToken } from "~/lib/auth";
 import { getCookie } from "hono/cookie";
 import { hashPin } from "~/lib/auth";
@@ -234,8 +234,26 @@ export const userApp = new Hono()
         } catch {
           return c.json({ success: false, message: "Unauthorized" }, 401);
         }
-        const users = await db.query.users.findMany();
-        return c.json({ success: true, users }, 200);
+        const users = await db.query.users.findMany({
+          orderBy: (t) => asc(t.createdAt),
+          columns: {
+            balance: false,
+            createdAt: false,
+            userType: false,
+          },
+        });
+        return c.json(
+          {
+            success: true,
+            users: await Promise.all(
+              users.map(async (v) => ({
+                ...v,
+                verificationPin: v.verificationPin ? await hashPin(v.verificationPin) : "",
+              }))
+            ),
+          },
+          200
+        );
       } catch (error) {
         console.error("Get user list error:", error);
         return c.json(
