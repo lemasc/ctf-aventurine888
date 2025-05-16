@@ -77,14 +77,14 @@ export class BrowserManager {
       await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Fill and submit transfer form
-      const amount = Math.floor(Math.random() * 0.05 * task.sender.balance)
-      await page.type("#recipientId", task.sender.userId);
-      await page.type("#amount", amount.toString());
-      await page.type("#transferPin", task.receiver.verificationPin || "");
-      await page.click("button[type=submit]");
-
+      // const amount = Math.floor(Math.random() * 0.5 * task.sender.balance)
+      // await page.type("#recipientId", task.receiver.userId);
+      // await page.type("#amount", amount.toString());
+      // await page.type("#transferPin", task.receiver.verificationPin || "");
+      // await page.click("button[type=submit]");
+      
       // Wait for potential XSS execution
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      // await new Promise((resolve) => setTimeout(resolve, 5000));
     } catch (error) {
       console.error("Error processing task:", error);
     } finally {
