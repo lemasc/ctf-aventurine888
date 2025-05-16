@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRevalidator } from "react-router";
 import {
   CardContent,
@@ -114,6 +114,10 @@ export function TransferCreditCard({
       revalidate();
     }
   };
+
+  useEffect(() => {
+    console.log("💵 TransferCredit Component Mounted")
+  }, [user])
 
   return (
     <Card className="bg-blue-50/70 backdrop-blur-sm gap-3">

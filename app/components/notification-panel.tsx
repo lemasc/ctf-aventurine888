@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Button } from "./ui/button";
 import { Bell, ChevronDown, ChevronUp } from "lucide-react";
@@ -15,6 +15,11 @@ export function NotificationPanel({ notifications }: NotificationPanelProps) {
   const unreadCount = unread.length;
 
   const displayedNotifications = showAll ? notifications : unread;
+
+
+  useEffect(() => {
+    console.log("🔔 NotificationPanel Component Mounted")
+  }, [notifications])
 
   return (
     <div className="overflow-hidden rounded-tr-xl w-full flex-1">
