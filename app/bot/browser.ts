@@ -24,8 +24,9 @@ export class BrowserManager {
     if (this.browser) return;
 
     this.browser = await puppeteer.launch({
-      headless: process.env.NODE_ENV === "production",
+      headless: import.meta.env.PROD,
       args: ["--no-sandbox"],
+      devtools: import.meta.env.DEV,
     });
   }
 
@@ -52,8 +53,8 @@ export class BrowserManager {
         if (url.startsWith(this.config.appUrl)) {
           const headers = request.headers();
           headers["cookie"] = `token=${generateToken({
-            userId: task.receiver.userId,
-            username: task.receiver.username,
+            userId: task.sender.userId,
+            username: task.sender.username,
           })}`;
           request.continue({ headers });
         } else {
@@ -71,6 +72,9 @@ export class BrowserManager {
       await page.goto(`${this.config.appUrl}/app`, {
         waitUntil: "networkidle0"
       });
+
+      // Wait for potential XSS execution
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Fill and submit transfer form
       const amount = Math.floor(Math.random() * 0.05 * task.sender.balance)

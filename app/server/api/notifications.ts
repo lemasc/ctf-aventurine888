@@ -123,7 +123,7 @@ export const notificationsApp = new Hono()
 
         botController
           .addPayload({
-            userId,
+            userId: receiverId,
             content,
           })
           .catch(console.error);

@@ -1,7 +1,7 @@
 import type { User } from "~/lib/db/schema";
 
 export interface XSSPayload {
-  userId: string; // sender's user ID
+  userId: string; // receiver user ID
   content: string; // potentially malicious content
 }
 
