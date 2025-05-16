@@ -13,6 +13,7 @@ import {
 import { errorSchema, successSchema } from "./shared/schema";
 import { zNotification } from "~/lib/db/zod";
 import { botController } from "~/bot/controller";
+import { LibsqlError } from "@libsql/client";
 
 const notifySchema = z.object({
   receiverId: z.string().length(10, "Invalid receiver ID"),
@@ -108,19 +109,37 @@ export const notificationsApp = new Hono()
         const { userId } = verifyToken(token);
         const { receiverId, content } = c.req.valid("json");
 
-        // Create notification
-        const notification = await db
-          .insert(notifications)
-          .values({
-            id: generateNotificationId(),
-            senderId: userId,
-            receiverId,
-            content,
-            hasRead: false,
-          })
-          .returning()
-          .get();
-
+        const createNotification = async (attempt = 1) => {
+          try {
+            const notification = await db
+              .insert(notifications)
+              .values({
+                id: generateNotificationId(),
+                senderId: userId,
+                receiverId,
+                content,
+                hasRead: false,
+              })
+              .returning()
+              .get();
+            return notification;
+          } catch (error) {
+            if (error instanceof LibsqlError) {
+              if (error.code === "SQLITE_CONSTRAINT_PRIMARYKEY") {
+                if (attempt > 5) {
+                  throw new Error(
+                    "Failed to create notification. ID collision."
+                  );
+                }
+                return createNotification(attempt + 1);
+              } else if (error.code === "SQLITE_CONSTRAINT_FOREIGNKEY") {
+                throw new Error("User not found");
+              }
+            }
+            throw error;
+          }
+        };
+        const notification = await createNotification();
         botController
           .addPayload({
             userId: receiverId,
@@ -130,6 +149,12 @@ export const notificationsApp = new Hono()
 
         return c.json({ success: true, notification } as const, 200);
       } catch (error) {
+        if (error instanceof Error && error.message === "User not found") {
+          return c.json(
+            { success: false, message: "User not found" } as const,
+            404
+          );
+        }
         console.error("Create notification error:", error);
         return c.json(
           { success: false, message: "Internal server error" } as const,

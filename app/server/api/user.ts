@@ -81,6 +81,13 @@ export const userApp = new Hono()
           return c.json({ success: false, message: "User not found" }, 404);
         }
 
+        if (!user.verificationPin) {
+          if (import.meta.env.NODE_ENV === "development") {
+            console.warn("User doesn't have a PIN set. This is not normal.");
+          }
+          return c.json({ success: false, message: "User not found" }, 404);
+        }
+
         // Return user data without password
         return c.json(
           {
@@ -248,7 +255,9 @@ export const userApp = new Hono()
             users: await Promise.all(
               users.map(async (v) => ({
                 ...v,
-                verificationPin: v.verificationPin ? await hashPin(v.verificationPin) : "",
+                verificationPin: v.verificationPin
+                  ? await hashPin(v.verificationPin)
+                  : "",
               }))
             ),
           },

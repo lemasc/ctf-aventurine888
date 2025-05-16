@@ -5,7 +5,7 @@ import { generateUserId } from "../app/lib/random";
 
 const idNumbersOnly = customAlphabet("0123456789", 4);
 
-const hertaUserId = "7BC1PNH99L"
+const hertaUserId = "7BC1PNH99L";
 
 async function main() {
   const userIds = new Set<string>([hertaUserId]);
@@ -17,7 +17,7 @@ async function main() {
         username: "madamherta",
         password: "herta555",
         balance: 160,
-        verificationPin: idNumbersOnly(6),
+        verificationPin: null,
       };
     }
     let userId = generateUserId();
