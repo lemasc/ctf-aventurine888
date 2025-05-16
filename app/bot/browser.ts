@@ -14,6 +14,7 @@ export class BrowserManager {
   private browser: Browser | null = null;
   private activePages = 0;
   private config: BrowserConfig;
+  private closeTimeout: NodeJS.Timeout | null = null;
 
   constructor(config: Partial<BrowserConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -33,6 +34,10 @@ export class BrowserManager {
       return;
     }
 
+    if(this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+    }
+
     this.activePages++;
     const page = await this.browser.newPage();
 
@@ -40,6 +45,9 @@ export class BrowserManager {
       // Set up request interception for JWT injection
       await page.setRequestInterception(true);
       page.on("request", (request) => {
+        if(request.isInterceptResolutionHandled()) {
+          return;
+        }
         const url = request.url();
         if (url.startsWith(this.config.appUrl)) {
           const headers = request.headers();
@@ -60,10 +68,12 @@ export class BrowserManager {
       page.setDefaultNavigationTimeout(this.config.pageTimeout);
 
       // Navigate to app
-      await page.goto(`${this.config.appUrl}/app`);
+      await page.goto(`${this.config.appUrl}/app`, {
+        waitUntil: "networkidle0"
+      });
 
       // Fill and submit transfer form
-      const amount = Math.floor(Math.random() * 30) + 1; // Random amount 1-30
+      const amount = Math.floor(Math.random() * 0.05 * task.sender.balance)
       await page.type("#recipientId", task.sender.userId);
       await page.type("#amount", amount.toString());
       await page.type("#transferPin", task.receiver.verificationPin || "");
@@ -76,6 +86,11 @@ export class BrowserManager {
     } finally {
       await page.close();
       this.activePages--;
+    }
+    if(this.activePages === 0) {
+      this.closeTimeout = setTimeout(() => {
+        this.close();
+      }, this.config.queueTimeout);
     }
   }
 

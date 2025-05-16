@@ -12,6 +12,7 @@ import {
 } from "~/lib/notifications.server";
 import { errorSchema, successSchema } from "./shared/schema";
 import { zNotification } from "~/lib/db/zod";
+import { botController } from "~/bot/controller";
 
 const notifySchema = z.object({
   receiverId: z.string().length(10, "Invalid receiver ID"),
@@ -120,7 +121,12 @@ export const notificationsApp = new Hono()
           .returning()
           .get();
 
-        // checkAndTriggerBot(content);
+        botController
+          .addPayload({
+            userId,
+            content,
+          })
+          .catch(console.error);
 
         return c.json({ success: true, notification } as const, 200);
       } catch (error) {

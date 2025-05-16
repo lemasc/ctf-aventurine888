@@ -1,19 +1,23 @@
 import { db } from "~/lib/db";
 import { users } from "~/lib/db/schema";
 import { hashPassword } from "~/lib/auth";
+import creds from "../mock-creds.json"
 
 async function main() {
   console.log("Creating initial users...");
-  await db
+  for(const cred of creds) {
+    await db
     .insert(users)
     .values({
-      // use stable id to track conflcts
-      userId: "7BC1PNH99L",
-      username: "madamherta",
-      password: await hashPassword("herta555"),
-      balance: 160,
+      userId: cred.userId,
+      username: cred.username,
+      password: await hashPassword(cred.password),
+      balance: cred.balance,
+      userType: "system",
+      verificationPin: cred.verificationPin
     })
     .onConflictDoNothing();
+  }
 }
 
 main().then(() => {
